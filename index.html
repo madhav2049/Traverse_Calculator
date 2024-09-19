@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Traverse Computation with Multiple Stations</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+            margin: auto;
+        }
+
+        h1, h2 {
+            text-align: center;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label, select, input, button {
+            margin-bottom: 10px;
+        }
+
+        input, select {
+            padding: 8px;
+            font-size: 16px;
+        }
+
+        button {
+            padding: 10px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        a {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: #007BFF;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        #results {
+            margin-top: 20px;
+            display: none;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        .station {
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Traverse Computation</h1>
+        <form id="traverseForm">
+            <label for="startX">Starting Coordinate X (m):</label>
+            <input type="number" id="startX" name="startX" required>
+
+            <label for="startY">Starting Coordinate Y (m):</label>
+            <input type="number" id="startY" name="startY" required>
+
+            <div id="stations">
+                <!-- Stations will be dynamically added here -->
+            </div>
+
+            <button type="button" id="addStation">Add Station</button>
+            <button type="submit">Submit</button>
+        </form>
+
+        <a href="#" id="viewResults">View Results</a>
+
+        <div id="results">
+            <h2>Computation Results</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Station No</th>
+                        <th>Distance (m)</th>
+                        <th>Bearing (degrees)</th>
+                        <th>Coordinate X (m)</th>
+                        <th>Coordinate Y (m)</th>
+                    </tr>
+                </thead>
+                <tbody id="resultsTableBody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        let stationCount = 0;
+
+        // Function to add a new station input field
+        document.getElementById('addStation').addEventListener('click', function() {
+            stationCount++;
+            const stationsDiv = document.getElementById('stations');
+            const stationDiv = document.createElement('div');
+            stationDiv.classList.add('station');
+            stationDiv.innerHTML = `
+                <h3>Station ${stationCount}</h3>
+                <label for="distance${stationCount}">Distance (m):</label>
+                <input type="number" id="distance${stationCount}" name="distance${stationCount}" required>
+
+                <label for="bearing${stationCount}">Bearing (degrees):</label>
+                <input type="number" id="bearing${stationCount}" name="bearing${stationCount}" required>
+            `;
+            stationsDiv.appendChild(stationDiv);
+        });
+
+        document.getElementById('traverseForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            // Get starting coordinates
+            let coordX = parseFloat(document.getElementById('startX').value);
+            let coordY = parseFloat(document.getElementById('startY').value);
+
+            const resultsTableBody = document.getElementById('resultsTableBody');
+            resultsTableBody.innerHTML = '';  // Clear any existing results
+
+            // Loop through each station and compute the new coordinates
+            for (let i = 1; i <= stationCount; i++) {
+                const distance = parseFloat(document.getElementById(`distance${i}`).value);
+                const bearing = parseFloat(document.getElementById(`bearing${i}`).value);
+
+                // Compute the change in coordinates
+                const deltaX = distance * Math.cos(bearing * Math.PI / 180);
+                const deltaY = distance * Math.sin(bearing * Math.PI / 180);
+
+                coordX += deltaX;
+                coordY += deltaY;
+
+                // Add the computed data to the results table
+                const resultRow = `
+                    <tr>
+                        <td>Station ${i}</td>
+                        <td>${distance.toFixed(2)}</td>
+                        <td>${bearing.toFixed(2)}</td>
+                        <td>${coordX.toFixed(2)}</td>
+                        <td>${coordY.toFixed(2)}</td>
+                    </tr>
+                `;
+                resultsTableBody.innerHTML += resultRow;
+            }
+
+            // Show the link to view results
+            document.getElementById('viewResults').style.display = 'block';
+        });
+
+        document.getElementById('viewResults').addEventListener('click', function(e) {
+            e.preventDefault();
+
+            // Display the results table
+            document.getElementById('results').style.display = 'block';
+        });
+    </script>
+</body>
+</html>
